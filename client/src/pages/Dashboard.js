@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
-  Grid,
   Paper,
   Typography,
   Button,
@@ -35,17 +34,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      if (user.role === 'landlord') {
-        fetchProperties();
-      } else {
-        fetchApplications();
-      }
-    }
-  }, [user]);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     try {
       const response = await axios.get('/api/properties/my-properties');
       setProperties(response.data);
@@ -54,9 +43,9 @@ const Dashboard = () => {
       setError('Error fetching properties');
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     try {
       const response = await axios.get('/api/applications/my-applications');
       setApplications(response.data);
@@ -65,7 +54,20 @@ const Dashboard = () => {
       setError('Error fetching applications');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        if (user.role === 'landlord') {
+          await fetchProperties();
+        } else {
+          await fetchApplications();
+        }
+      }
+    };
+    loadData();
+  }, [user, fetchProperties, fetchApplications]);
 
   const handleDeleteProperty = async (propertyId) => {
     if (window.confirm('Are you sure you want to delete this property?')) {

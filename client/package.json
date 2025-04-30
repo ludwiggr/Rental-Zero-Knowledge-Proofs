@@ -14,8 +14,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
-    "react-scripts": "5.0.1",
-    "snarkjs": "^0.6.11",
+    "react-scripts": "^5.0.1",
+    "snarkjs": "^0.7.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -43,7 +43,7 @@
     ]
   },
   "devDependencies": {
-    "@craco/craco": "^7.1.0",
+    "@craco/craco": "^5.9.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "os-browserify": "^0.3.0",

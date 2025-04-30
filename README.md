@@ -185,10 +185,90 @@ npm install
 **Problem**: White screen or "You need to enable JavaScript" message
 
 **Solutions**:
-- Clear browser cache
-- Check browser console for errors
-- Ensure all dependencies are installed
-- Try using a different browser
+1. **Check JavaScript Settings**
+   - Ensure JavaScript is enabled in your browser:
+     - Chrome: Settings → Privacy and Security → Site Settings → JavaScript
+     - Firefox: about:preferences → Privacy & Security → Permissions → JavaScript
+     - Safari: Preferences → Security → Enable JavaScript
+     - Edge: Settings → Cookies and site permissions → JavaScript
+
+2. **Clear Browser Cache**
+   - Windows/Linux: Ctrl + Shift + Delete
+   - macOS: Cmd + Shift + Delete
+   - Select "Cached images and files"
+   - Click "Clear data"
+
+3. **Development Server Issues**
+   - Stop the development server (Ctrl/Cmd + C)
+   - Clear the build cache:
+     ```bash
+     # In the client directory
+     rm -rf node_modules/.cache
+     ```
+   - Restart the development server:
+     ```bash
+     npm start
+     ```
+
+4. **Check React Mounting**
+   - Ensure `index.html` has the correct root element:
+     ```html
+     <div id="root"></div>
+     ```
+   - Verify `index.js` has the correct mounting code:
+     ```javascript
+     import { createRoot } from 'react-dom/client';
+     const root = createRoot(document.getElementById('root'));
+     root.render(<App />);
+     ```
+
+5. **Browser Compatibility**
+   - Try a different browser
+   - Update your current browser to the latest version
+   - Disable browser extensions temporarily
+
+6. **Development Environment**
+   - Check Node.js version:
+     ```bash
+     node --version
+     ```
+   - Should be v16 or higher
+   - If not, update Node.js:
+     ```bash
+     # Using nvm
+     nvm install 16
+     nvm use 16
+     ```
+
+7. **Project Dependencies**
+   - Clean install dependencies:
+     ```bash
+     # In the client directory
+     rm -rf node_modules package-lock.json
+     npm install
+     ```
+   - Check for missing dependencies:
+     ```bash
+     npm ls react react-dom
+     ```
+
+8. **Development Tools**
+   - Open browser developer tools (F12)
+   - Check Console tab for errors
+   - Check Network tab for failed requests
+   - Check Application tab for service worker issues
+
+If none of these solutions work:
+1. Create a new React app and copy over your components:
+   ```bash
+   npx create-react-app temp-app
+   cp -r client/src/* temp-app/src/
+   cd temp-app
+   npm install
+   npm start
+   ```
+2. If the new app works, compare configurations
+3. If the new app doesn't work, check your system's Node.js installation
 
 ## Development Workflow
 
