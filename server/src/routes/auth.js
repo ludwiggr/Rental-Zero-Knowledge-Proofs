@@ -1,106 +1,144 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { z } = require('zod');
+import { FastifyInstance } from 'fastify';
+import User from '../models/User.js';
+import { hashPassword, comparePassword } from '../utils/auth.js';
 
-// Validation schemas
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  role: z.enum(['tenant', 'landlord']),
-  phoneNumber: z.string().optional()
-});
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string()
-});
-
-// Register route
-router.post('/register', async (req, res) => {
-  try {
-    const validatedData = registerSchema.parse(req.body);
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: validatedData.email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+const registerSchema = {
+  body: {
+    type: 'object',
+    required: ['name', 'email', 'password', 'role'],
+    properties: {
+      name: { type: 'string', minLength: 2 },
+      email: { type: 'string', format: 'email' },
+      password: { type: 'string', minLength: 6 },
+      role: { type: 'string', enum: ['tenant', 'landlord'] }
     }
-
-    // Create new user
-    const user = new User(validatedData);
-    await user.save();
-
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.status(201).json({
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName
+  },
+  response: {
+    201: {
+      type: 'object',
+      properties: {
+        token: { type: 'string' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+            role: { type: 'string' }
+          }
+        }
       }
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Validation error', errors: error.errors });
     }
-    res.status(500).json({ message: 'Error registering user' });
   }
-});
+};
 
-// Login route
-router.post('/login', async (req, res) => {
-  try {
-    const validatedData = loginSchema.parse(req.body);
-    
-    // Find user
-    const user = await User.findOne({ email: validatedData.email });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+const loginSchema = {
+  body: {
+    type: 'object',
+    required: ['email', 'password'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      password: { type: 'string' }
     }
-
-    // Check password
-    const isMatch = await user.comparePassword(validatedData.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        token: { type: 'string' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+            role: { type: 'string' }
+          }
+        }
       }
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Validation error', errors: error.errors });
     }
-    res.status(500).json({ message: 'Error logging in' });
   }
-});
+};
 
-module.exports = router; 
+export default async function authRoutes(fastify: FastifyInstance) {
+  // Register new user
+  fastify.post('/register', {
+    schema: registerSchema,
+    handler: async (request, reply) => {
+      const { name, email, password, role } = request.body;
+
+      // Check if user already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        throw fastify.httpErrors.badRequest('Email already registered');
+      }
+
+      // Create new user
+      const hashedPassword = await hashPassword(password);
+      const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        role
+      });
+
+      // Generate JWT token
+      const token = fastify.jwt.sign({ id: user._id, role: user.role });
+
+      reply.code(201).send({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+  });
+
+  // Login user
+  fastify.post('/login', {
+    schema: loginSchema,
+    handler: async (request, reply) => {
+      const { email, password } = request.body;
+
+      // Find user
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw fastify.httpErrors.unauthorized('Invalid credentials');
+      }
+
+      // Verify password
+      const isValid = await comparePassword(password, user.password);
+      if (!isValid) {
+        throw fastify.httpErrors.unauthorized('Invalid credentials');
+      }
+
+      // Generate JWT token
+      const token = fastify.jwt.sign({ id: user._id, role: user.role });
+
+      reply.send({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+    }
+  });
+
+  // Get current user profile
+  fastify.get('/me', {
+    onRequest: [fastify.authenticate],
+    handler: async (request, reply) => {
+      const user = await User.findById(request.user.id).select('-password');
+      if (!user) {
+        throw fastify.httpErrors.notFound('User not found');
+      }
+      reply.send(user);
+    }
+  });
+} 

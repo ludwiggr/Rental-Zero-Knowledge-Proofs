@@ -30,9 +30,31 @@ A zero-knowledge proof is a way to prove something is true without revealing the
 Before you begin, you'll need to install:
 
 1. **Node.js and npm**
-   - Windows: Download and install from [nodejs.org](https://nodejs.org/)
-   - macOS: Install using Homebrew: `brew install node`
-   - Linux: `sudo apt install nodejs npm`
+   - Install Node Version Manager (nvm) first:
+     - Windows: Download and install [nvm-windows](https://github.com/coreybutler/nvm-windows/releases)
+     - macOS/Linux: 
+       ```bash
+       curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+       ```
+     - After installation, restart your terminal
+   
+   - Then install Node.js using nvm:
+     ```bash
+     # Install Node.js 18 (LTS version)
+     nvm install 18
+     
+     # Use Node.js 18
+     nvm use 18
+     
+     # Make Node.js 18 the default version
+     nvm alias default 18
+     
+     # Verify installation
+     node --version  # Should show v18.x.x
+     npm --version   # Should show 8.x.x or higher
+     ```
+
+   > **Note**: If you're using a different Node.js version, you can switch to v18 using `nvm use 18`. To make this change permanent, run `nvm alias default 18`.
 
 2. **MongoDB**
    - Windows: Download and install from [mongodb.com](https://www.mongodb.com/try/download/community)
@@ -316,4 +338,266 @@ If you encounter issues:
 
 ## License
 
-MIT
+GPL-3.0 license
+
+## Testing
+
+The project uses Jest as the testing framework with separate configurations for client, server, and circuit tests. All tests are located in the `/test` directory, organized by component.
+
+### Prerequisites
+
+Before running tests, ensure you have installed all dependencies:
+
+```bash
+# Install root-level dependencies
+npm install
+
+# Install client dependencies
+cd client && npm install
+
+# Install server dependencies
+cd ../server && npm install
+```
+
+### Running Tests
+
+You can run tests in several ways:
+
+1. **Run all tests**:
+   ```bash
+   npm test
+   ```
+
+2. **Run specific component tests**:
+   ```bash
+   # Run only client tests
+   npm run test:client
+
+   # Run only server tests
+   npm run test:server
+
+   # Run only circuit tests
+   npm run test:circuits
+   ```
+
+3. **Run tests in watch mode** (useful during development):
+   ```bash
+   npm run test:watch
+   ```
+
+4. **Generate coverage report**:
+   ```bash
+   npm run test:coverage
+   ```
+
+### Test Structure
+
+The test directory is organized as follows:
+
+```
+/test
+├── client/         # Client-side tests (React components, hooks, etc.)
+├── server/         # Server-side tests (API endpoints, database operations)
+└── circuits/       # Circuit tests (zero-knowledge proof circuits)
+```
+
+### Writing Tests
+
+1. **Client Tests**:
+   - Use React Testing Library for component tests
+   - Test files should be named `*.test.js` or `*.test.jsx`
+   - Place tests in `/test/client/` directory
+   - Example: `test/client/Login.test.js`
+
+2. **Server Tests**:
+   - Use Jest with Node environment
+   - Test files should be named `*.test.js`
+   - Place tests in `/test/server/` directory
+   - MongoDB is automatically mocked using `mongodb-memory-server`
+
+3. **Circuit Tests**:
+   - Use Jest with Node environment
+   - Test files should be named `*.test.js`
+   - Place tests in `/test/circuits/` directory
+   - Helper functions for circuit testing are available in `setup.js`
+
+### Test Coverage
+
+The project is configured to collect coverage information for:
+- Client-side code in `client/src/`
+- Server-side code in `server/src/`
+- Circuit code in `circuits/`
+
+To view the coverage report:
+1. Run `npm run test:coverage`
+2. Open `coverage/lcov-report/index.html` in your browser
+
+### Troubleshooting Tests
+
+1. **Client Tests Failing**:
+   - Ensure all required dependencies are installed
+   - Check that the component's dependencies are properly mocked
+   - Verify that the test environment is properly configured
+
+2. **Server Tests Failing**:
+   - Check MongoDB connection settings
+   - Verify that the test database is properly initialized
+   - Ensure all required environment variables are set
+
+3. **Circuit Tests Failing**:
+   - Verify that circuit files (.wasm and .zkey) are present
+   - Check that the circuit paths in tests are correct
+   - Ensure snarkjs is properly configured
+
+### Backend API Testing with Vitest
+
+The backend uses Vitest for API testing, which provides:
+- Fast test execution
+- Native ESM support
+- Built-in TypeScript support
+- Watch mode with UI
+- Coverage reporting
+
+#### Running Backend Tests
+
+```bash
+# Navigate to server directory
+cd server
+
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+#### Writing Backend Tests
+
+1. **Test Structure**:
+   - Tests are located in `server/test/`
+   - API tests are in `server/test/api/`
+   - Each test file should be named `*.test.js`
+
+2. **Test Setup**:
+   - MongoDB is automatically mocked using `mongodb-memory-server`
+   - Database is cleared between tests
+   - Test environment is configured in `vitest.config.js`
+
+3. **Example Test**:
+   ```javascript
+   import { describe, it, expect } from 'vitest';
+   import request from 'supertest';
+   import app from '../../src/app';
+
+   describe('API Endpoint', () => {
+     it('should handle request correctly', async () => {
+       const response = await request(app)
+         .post('/api/endpoint')
+         .send({ data: 'test' });
+
+       expect(response.status).toBe(200);
+       expect(response.body).toHaveProperty('data');
+     });
+   });
+   ```
+
+4. **Best Practices**:
+   - Use `beforeEach` to set up test data
+   - Use `afterEach` to clean up test data
+   - Test both success and error cases
+   - Mock external services when necessary
+   - Use descriptive test names
+
+### Circuit Testing
+
+The project uses Vitest for testing zero-knowledge proof circuits. Circuit tests verify the correctness and privacy properties of the zero-knowledge proofs.
+
+#### Running Circuit Tests
+
+```bash
+# Navigate to circuits directory
+cd circuits
+
+# Run all circuit tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+#### Circuit Test Structure
+
+1. **Test Setup** (`test/setup.js`):
+   - Helper functions for loading circuits
+   - Proof generation and verification utilities
+   - Field element conversion utilities
+
+2. **Test Categories**:
+   - Valid proof generation and verification
+   - Invalid input handling
+   - Privacy property verification
+   - Edge case handling
+
+3. **Example Test Cases**:
+   ```javascript
+   describe('Income Verification Circuit', () => {
+     it('should generate and verify proof for income above threshold', async () => {
+       const input = {
+         income: toFieldElement(5000),
+         threshold: toFieldElement(3000),
+         salt: toFieldElement(12345)
+       };
+
+       const { proof, publicSignals } = await generateProof(circuit, input);
+       const isValid = await verifyProof(circuit, proof, publicSignals);
+
+       expect(isValid).toBe(true);
+       expect(publicSignals[0]).toBe('1');
+     });
+   });
+   ```
+
+#### Testing Best Practices
+
+1. **Privacy Testing**:
+   - Verify that private inputs remain hidden
+   - Check that only necessary information is revealed
+   - Test with different salt values
+
+2. **Input Validation**:
+   - Test with valid inputs
+   - Test with invalid inputs
+   - Test edge cases and boundary conditions
+
+3. **Proof Verification**:
+   - Verify proof generation
+   - Verify proof validation
+   - Test with tampered proofs
+
+4. **Performance Testing**:
+   - Test with large input values
+   - Test with complex circuit logic
+   - Monitor proof generation time
+
+#### Troubleshooting Circuit Tests
+
+1. **Circuit Loading Issues**:
+   - Verify circuit files exist (.wasm, .zkey)
+   - Check file paths in test setup
+   - Ensure correct circuit compilation
+
+2. **Proof Generation Failures**:
+   - Check input format and range
+   - Verify circuit constraints
+   - Check for field element conversion issues
+
+3. **Verification Failures**:
+   - Verify verification key
+   - Check public signals format
+   - Ensure correct proof structure

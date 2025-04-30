@@ -14,14 +14,16 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
-    "react-scripts": "^5.0.1",
-    "snarkjs": "^0.7.5",
+    "react-scripts": "5.0.1",
+    "snarkjs": "^0.6.11",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
+    "test:watch": "craco test --watch",
+    "test:coverage": "craco test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -43,9 +45,13 @@
     ]
   },
   "devDependencies": {
-    "@craco/craco": "^5.9.0",
+    "@craco/craco": "^7.1.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "jest-environment-jsdom": "^29.5.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
@@ -54,5 +60,30 @@
   },
   "resolutions": {
     "process": "^0.11.10"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/src/__mocks__/fileMock.js"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/**/*.stories.{js,jsx}",
+      "!src/**/*.test.{js,jsx}",
+      "!src/**/__tests__/**"
+    ],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.{js,jsx}"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ]
   }
 }

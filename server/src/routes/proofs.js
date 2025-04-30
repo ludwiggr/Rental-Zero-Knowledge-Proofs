@@ -1,75 +1,62 @@
-const express = require('express');
-const router = express.Router();
-const snarkjs = require('snarkjs');
-const auth = require('../middleware/auth');
-const { z } = require('zod');
+import { FastifyInstance } from 'fastify';
+import { verifyProof } from '../utils/proofs.js';
 
-// Validation schema for proof submission
-const proofSchema = z.object({
-  propertyId: z.string(),
-  proof: z.object({
-    pi_a: z.array(z.string()),
-    pi_b: z.array(z.array(z.string())),
-    pi_c: z.array(z.string()),
-    protocol: z.string(),
-    curve: z.string()
-  }),
-  publicSignals: z.array(z.string())
-});
-
-// Generate proof verification key
-router.get('/verification-key', async (req, res) => {
-  try {
-    const verificationKey = await snarkjs.zKey.exportVerificationKey('circuits/income_proof.zkey');
-    res.json(verificationKey);
-  } catch (error) {
-    res.status(500).json({ message: 'Error generating verification key' });
-  }
-});
-
-// Verify income proof
-router.post('/verify', auth, async (req, res) => {
-  try {
-    const { propertyId, proof, publicSignals } = proofSchema.parse(req.body);
-
-    // Load verification key
-    const verificationKey = await snarkjs.zKey.exportVerificationKey('circuits/income_proof.zkey');
-
-    // Verify the proof
-    const isValid = await snarkjs.groth16.verify(verificationKey, publicSignals, proof);
-
-    if (!isValid) {
-      return res.status(400).json({ message: 'Invalid proof' });
+const proofSchema = {
+  body: {
+    type: 'object',
+    required: ['proof', 'publicSignals'],
+    properties: {
+      proof: {
+        type: 'object',
+        required: ['pi_a', 'pi_b', 'pi_c', 'protocol'],
+        properties: {
+          pi_a: { type: 'array', items: { type: 'string' } },
+          pi_b: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
+          pi_c: { type: 'array', items: { type: 'string' } },
+          protocol: { type: 'string', enum: ['groth16'] }
+        }
+      },
+      publicSignals: { type: 'array', items: { type: 'string' } }
     }
-
-    // Store the verification result
-    // In a real application, you would store this in a database
-    // and associate it with the user and property
-
-    res.json({
-      message: 'Proof verified successfully',
-      verified: true
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ message: 'Validation error', errors: error.errors });
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        verified: { type: 'boolean' }
+      }
     }
-    res.status(500).json({ message: 'Error verifying proof' });
   }
-});
+};
 
-// Get proof status for a property
-router.get('/status/:propertyId', auth, async (req, res) => {
-  try {
-    // In a real application, you would check the database
-    // for the proof status associated with the user and property
-    res.json({
-      hasVerifiedProof: false,
-      lastVerified: null
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Error checking proof status' });
-  }
-});
+export default async function proofRoutes(fastify) {
+  // Verify income proof
+  fastify.post('/verify/income', {
+    schema: proofSchema,
+    onRequest: [fastify.authenticate],
+    handler: async (request, reply) => {
+      try {
+        const { proof, publicSignals } = request.body;
+        const verified = await verifyProof('incomeVerification', proof, publicSignals);
+        reply.send({ verified });
+      } catch (error) {
+        throw fastify.httpErrors.badRequest('Invalid proof format');
+      }
+    }
+  });
 
-module.exports = router; 
+  // Verify rental history proof
+  fastify.post('/verify/rental-history', {
+    schema: proofSchema,
+    onRequest: [fastify.authenticate],
+    handler: async (request, reply) => {
+      try {
+        const { proof, publicSignals } = request.body;
+        const verified = await verifyProof('rentalHistory', proof, publicSignals);
+        reply.send({ verified });
+      } catch (error) {
+        throw fastify.httpErrors.badRequest('Invalid proof format');
+      }
+    }
+  });
+} 
