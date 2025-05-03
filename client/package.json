@@ -19,8 +19,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
+    "start": "webpack serve --mode development --open",
+    "build": "webpack --mode production",
     "test": "craco test",
     "test:watch": "craco test --watch",
     "test:coverage": "craco test --coverage --watchAll=false",
@@ -45,18 +45,29 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.23.3",
     "@craco/craco": "^7.1.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "babel-loader": "^10.0.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "css-loader": "^7.1.2",
+    "dotenv": "^16.4.5",
+    "html-webpack-plugin": "^5.6.0",
     "jest-environment-jsdom": "^29.5.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
-    "vm-browserify": "^1.1.2"
+    "style-loader": "^4.0.0",
+    "vm-browserify": "^1.1.2",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
   },
   "resolutions": {
     "process": "^0.11.10"
@@ -85,5 +96,13 @@
       "node_modules",
       "src"
     ]
-  }
+  },
+  "main": "craco.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }

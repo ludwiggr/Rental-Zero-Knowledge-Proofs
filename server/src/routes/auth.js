@@ -1,6 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { hashPassword, comparePassword } from '../utils/auth.js';
 
 const registerSchema = {
   body: {
@@ -60,32 +60,56 @@ const loginSchema = {
   }
 };
 
-export default async function authRoutes(fastify: FastifyInstance) {
-  // Register new user
+/**
+ * @param {import('fastify').FastifyInstance} fastify
+ */
+export default async function authRoutes(fastify) {
+  // Register user
   fastify.post('/register', {
-    schema: registerSchema,
-    handler: async (request, reply) => {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['name', 'email', 'password', 'role'],
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string', minLength: 6 },
+          role: { type: 'string', enum: ['tenant', 'landlord'] }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
       const { name, email, password, role } = request.body;
 
       // Check if user already exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        throw fastify.httpErrors.badRequest('Email already registered');
+        return reply.code(400).send({ error: 'User already exists' });
       }
 
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
       // Create new user
-      const hashedPassword = await hashPassword(password);
-      const user = await User.create({
+      const user = new User({
         name,
         email,
         password: hashedPassword,
         role
       });
 
-      // Generate JWT token
-      const token = fastify.jwt.sign({ id: user._id, role: user.role });
+      await user.save();
 
-      reply.code(201).send({
+      // Generate JWT
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1d' }
+      );
+
+      return reply.code(201).send({
         token,
         user: {
           id: user._id,
@@ -94,31 +118,48 @@ export default async function authRoutes(fastify: FastifyInstance) {
           role: user.role
         }
       });
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ error: 'Server error' });
     }
   });
 
   // Login user
   fastify.post('/login', {
-    schema: loginSchema,
-    handler: async (request, reply) => {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
       const { email, password } = request.body;
 
-      // Find user
+      // Check if user exists
       const user = await User.findOne({ email });
       if (!user) {
-        throw fastify.httpErrors.unauthorized('Invalid credentials');
+        return reply.code(401).send({ error: 'Invalid credentials' });
       }
 
       // Verify password
-      const isValid = await comparePassword(password, user.password);
-      if (!isValid) {
-        throw fastify.httpErrors.unauthorized('Invalid credentials');
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return reply.code(401).send({ error: 'Invalid credentials' });
       }
 
-      // Generate JWT token
-      const token = fastify.jwt.sign({ id: user._id, role: user.role });
+      // Generate JWT
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1d' }
+      );
 
-      reply.send({
+      return reply.send({
         token,
         user: {
           id: user._id,
@@ -127,18 +168,28 @@ export default async function authRoutes(fastify: FastifyInstance) {
           role: user.role
         }
       });
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ error: 'Server error' });
     }
   });
 
-  // Get current user profile
+  // Get current user
   fastify.get('/me', {
-    onRequest: [fastify.authenticate],
-    handler: async (request, reply) => {
-      const user = await User.findById(request.user.id).select('-password');
-      if (!user) {
-        throw fastify.httpErrors.notFound('User not found');
+    onRequest: [async (request, reply) => {
+      try {
+        await request.jwtVerify();
+      } catch (err) {
+        reply.send(err);
       }
-      reply.send(user);
+    }]
+  }, async (request, reply) => {
+    try {
+      const user = await User.findById(request.user.id).select('-password');
+      return reply.send(user);
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ error: 'Server error' });
     }
   });
 } 
