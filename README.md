@@ -2,7 +2,7 @@
 
 A secure and privacy-preserving apartment rental system that uses zero-knowledge proofs to verify tenant qualifications without revealing sensitive information.
 
-## Features
+## Project Overview
 
 - 🔐 Zero-knowledge proof verification for:
   - Income requirements
@@ -14,6 +14,59 @@ A secure and privacy-preserving apartment rental system that uses zero-knowledge
 - 📱 Modern, responsive UI with Material-UI
 - 🔍 Comprehensive test coverage
 - 🚀 CI/CD pipeline with GitHub Actions
+
+This project implements a Zero Knowledge Proof (ZKP) system for rental verification, allowing users to prove their eligibility for rental properties without revealing sensitive personal information. The system consists of three main circuits that verify different aspects of rental eligibility:
+
+1. **Income Proof Circuit**: Verifies that a user's income meets or exceeds a minimum threshold without revealing the actual income amount.
+2. **Rental History Circuit**: Proves that a user has a sufficient number of on-time rental payments without disclosing the complete payment history.
+3. **Credit Score Circuit**: Demonstrates that a user's credit score meets the minimum requirement without revealing the actual score.
+
+## Design Best Practices
+
+### 1. Privacy by Design
+- **Zero Knowledge**: The system ensures that sensitive information (income, credit score, payment history) remains private while still proving eligibility.
+- **Selective Disclosure**: Users can prove specific claims without revealing the underlying data.
+- **Data Minimization**: Only the minimum necessary information is used to generate proofs.
+
+### 2. Circuit Design
+- **Modular Architecture**: Each circuit is designed to handle a specific verification aspect, making the system modular and maintainable.
+- **Efficient Constraints**: Circuits use circomlib's comparators for efficient constraint generation.
+- **Clear Input/Output Interface**: Each circuit has well-defined private inputs, public inputs, and outputs.
+
+### 3. Code Organization
+- **Separation of Concerns**: Circuits, tests, and build scripts are organized in separate directories.
+- **Clear Directory Structure**:
+  ```
+  circuits/
+  ├── src/           # Circuit source files
+  ├── test/          # Test files
+  ├── build/         # Compiled circuits
+  ├── artifacts/     # Generated keys and proofs
+  └── scripts/       # Build and setup scripts
+  ```
+
+### 4. Testing Strategy
+- **Comprehensive Test Coverage**: Each circuit has tests for:
+  - Valid input scenarios
+  - Invalid input scenarios
+  - Edge cases
+- **Test Helpers**: Common test utilities are shared across test files.
+- **Automated Testing**: Jest is used for automated test execution.
+
+### 5. Security Considerations
+- **Trusted Setup**: Uses a secure powers of tau ceremony for circuit setup.
+- **Key Management**: Separate proving and verification keys for each circuit.
+- **Input Validation**: Circuits validate inputs to prevent invalid proofs.
+
+### 6. Development Workflow
+- **Build Automation**: Automated compilation and setup scripts.
+- **Dependency Management**: Clear package management with version control.
+- **Documentation**: Comprehensive documentation of circuits and APIs.
+
+### 7. Performance Optimization
+- **Efficient Circuit Design**: Minimized number of constraints.
+- **Optimized Proof Generation**: Uses groth16 proving system for efficient proofs.
+- **Compact Proof Size**: Generated proofs are optimized for size and verification speed.
 
 ## Tech Stack
 
@@ -63,6 +116,51 @@ A secure and privacy-preserving apartment rental system that uses zero-knowledge
    ```bash
    npm start
    ```
+
+## Running the Application
+
+### Client Application
+
+1. **Navigate to the client directory**
+   ```bash
+   cd client
+   ```
+
+2. **Install client dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm start
+   ```
+   This will start the React development server on `http://localhost:3000`
+
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
+   This creates an optimized production build in the `build` directory.
+
+5. **Run client tests**
+   ```bash
+   npm test
+   ```
+
+### Development Features
+- Hot reloading enabled
+- ESLint for code quality
+- Prettier for code formatting
+- Source maps for debugging
+- Development proxy for API requests
+
+### Environment Variables
+Create a `.env` file in the client directory with:
+```env
+REACT_APP_API_URL=http://localhost:3001
+REACT_APP_ENV=development
+```
 
 ## Project Structure
 
@@ -168,3 +266,5 @@ For support, please:
 1. Check the [documentation](docs/README.md)
 2. Search existing [issues](https://github.com/yourusername/Rental-Zero-Knowledge-Proofs/issues)
 3. Create a new issue if needed
+
+

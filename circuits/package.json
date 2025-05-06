@@ -1,0 +1,22 @@
+{
+  "name": "rental-zkp-circuits",
+  "version": "1.0.0",
+  "description": "Zero Knowledge Proof circuits for rental verification",
+  "type": "commonjs",
+  "scripts": {
+    "test": "jest",
+    "compile": "./scripts/compile.sh"
+  },
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "snarkjs": "^0.7.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 30000,
+    "transform": {}
+  }
+}

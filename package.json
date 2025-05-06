@@ -1,7 +1,7 @@
 {
   "name": "rental-zkp",
   "version": "1.0.0",
-  "description": "Zero-Knowledge Proof Apartment Rental System",
+  "description": "Rental Zero Knowledge Proof System",
   "scripts": {
     "test": "npm run test:server && npm run test:client && npm run test:circuits",
     "test:server": "cd server && npm test",
