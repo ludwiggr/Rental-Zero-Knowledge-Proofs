@@ -6,7 +6,6 @@ A secure and privacy-preserving apartment rental system that uses zero-knowledge
 
 - 🔐 Zero-knowledge proof verification for:
   - Income requirements
-  - Rental history
   - Credit score
 - 🏢 Property listing and management
 - 👥 User authentication and authorization
@@ -15,11 +14,10 @@ A secure and privacy-preserving apartment rental system that uses zero-knowledge
 - 🔍 Comprehensive test coverage
 - 🚀 CI/CD pipeline with GitHub Actions
 
-This project implements a Zero Knowledge Proof (ZKP) system for rental verification, allowing users to prove their eligibility for rental properties without revealing sensitive personal information. The system consists of three main circuits that verify different aspects of rental eligibility:
+This project implements a Zero Knowledge Proof (ZKP) system for rental verification, allowing users to prove their eligibility for rental properties without revealing sensitive personal information. The system consists of two main circuits that verify different aspects of rental eligibility:
 
 1. **Income Proof Circuit**: Verifies that a user's income meets or exceeds a minimum threshold without revealing the actual income amount.
-2. **Rental History Circuit**: Proves that a user has a sufficient number of on-time rental payments without disclosing the complete payment history.
-3. **Credit Score Circuit**: Demonstrates that a user's credit score meets the minimum requirement without revealing the actual score.
+2. **Credit Score Circuit**: Demonstrates that a user's credit score meets the minimum requirement without revealing the actual score.
 
 ## Design Best Practices
 
