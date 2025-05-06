@@ -13,7 +13,7 @@
     "axios": "^1.3.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.10.0",
+    "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
     "snarkjs": "^0.6.11",
     "web-vitals": "^2.1.4"
@@ -21,9 +21,9 @@
   "scripts": {
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",
-    "test": "craco test",
-    "test:watch": "craco test --watch",
-    "test:coverage": "craco test --coverage --watchAll=false",
+    "test": "craco test --testPathPattern=../test/client",
+    "test:watch": "craco test --testPathPattern=../test/client --watch",
+    "test:coverage": "craco test --testPathPattern=../test/client --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -90,7 +90,7 @@
       "!src/**/__tests__/**"
     ],
     "testMatch": [
-      "<rootDir>/tests/**/*.test.{js,jsx}"
+      "<rootDir>/../test/client/**/*.test.{js,jsx}"
     ],
     "moduleDirectories": [
       "node_modules",
@@ -99,7 +99,7 @@
   },
   "main": "craco.config.js",
   "directories": {
-    "test": "tests"
+    "test": "../test/client"
   },
   "keywords": [],
   "author": "",
