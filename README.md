@@ -1,70 +1,46 @@
-# Zero-Knowledge Proof Apartment Rental System
+# Decentralized Zero-Knowledge Proof Rental Verification System
 
-A secure and privacy-preserving apartment rental system that uses zero-knowledge proofs to verify tenant qualifications without revealing sensitive information.
+A secure and privacy-preserving apartment rental system that uses zero-knowledge proofs to verify tenant qualifications without revealing sensitive information. The system is built on a decentralized architecture with separate servers for attestations and clients for proving and verification.
+https://www.youtube.com/watch?v=ZuwUFN7m4AY
 
-## Project Overview
+## System Architecture
+
+### Servers (Attestation Providers)
+
+1. **Employer Server**
+   - Publishes income verification circuit
+   - Signs income attestations
+   - Provides API for income verification
+
+2. **Bank Server**
+   - Publishes credit score verification circuit
+   - Signs credit score attestations
+   - Provides API for credit score verification
+
+### Clients
+
+1. **Renter (Prover)**
+   - Collects attestations from servers
+   - Runs local proving system
+   - Generates SNARK proofs
+   - Manages private data
+
+2. **Landlord (Verifier)**
+   - Verifies SNARK proofs
+   - Manages property listings
+   - Handles rental applications
+
+## Features
 
 - 🔐 Zero-knowledge proof verification for:
-  - Income requirements
-  - Credit score
+  - Income requirements (Employer attestation)
+  - Credit score (Bank attestation)
 - 🏢 Property listing and management
 - 👥 User authentication and authorization
 - 💬 Secure tenant-landlord communication
 - 📱 Modern, responsive UI with Material-UI
 - 🔍 Comprehensive test coverage
 - 🚀 CI/CD pipeline with GitHub Actions
-
-This project implements a Zero Knowledge Proof (ZKP) system for rental verification, allowing users to prove their eligibility for rental properties without revealing sensitive personal information. The system consists of two main circuits that verify different aspects of rental eligibility:
-
-1. **Income Proof Circuit**: Verifies that a user's income meets or exceeds a minimum threshold without revealing the actual income amount.
-2. **Credit Score Circuit**: Demonstrates that a user's credit score meets the minimum requirement without revealing the actual score.
-
-## Design Best Practices
-
-### 1. Privacy by Design
-- **Zero Knowledge**: The system ensures that sensitive information (income, credit score, payment history) remains private while still proving eligibility.
-- **Selective Disclosure**: Users can prove specific claims without revealing the underlying data.
-- **Data Minimization**: Only the minimum necessary information is used to generate proofs.
-
-### 2. Circuit Design
-- **Modular Architecture**: Each circuit is designed to handle a specific verification aspect, making the system modular and maintainable.
-- **Efficient Constraints**: Circuits use circomlib's comparators for efficient constraint generation.
-- **Clear Input/Output Interface**: Each circuit has well-defined private inputs, public inputs, and outputs.
-
-### 3. Code Organization
-- **Separation of Concerns**: Circuits, tests, and build scripts are organized in separate directories.
-- **Clear Directory Structure**:
-  ```
-  circuits/
-  ├── src/           # Circuit source files
-  ├── test/          # Test files
-  ├── build/         # Compiled circuits
-  ├── artifacts/     # Generated keys and proofs
-  └── scripts/       # Build and setup scripts
-  ```
-
-### 4. Testing Strategy
-- **Comprehensive Test Coverage**: Each circuit has tests for:
-  - Valid input scenarios
-  - Invalid input scenarios
-  - Edge cases
-- **Test Helpers**: Common test utilities are shared across test files.
-- **Automated Testing**: Jest is used for automated test execution.
-
-### 5. Security Considerations
-- **Trusted Setup**: Uses a secure powers of tau ceremony for circuit setup.
-- **Key Management**: Separate proving and verification keys for each circuit.
-- **Input Validation**: Circuits validate inputs to prevent invalid proofs.
-
-### 6. Development Workflow
-- **Build Automation**: Automated compilation and setup scripts.
-- **Dependency Management**: Clear package management with version control.
-- **Documentation**: Comprehensive documentation of circuits and APIs.
-
-### 7. Performance Optimization
-- **Efficient Circuit Design**: Minimized number of constraints.
-- **Optimized Proof Generation**: Uses groth16 proving system for efficient proofs.
-- **Compact Proof Size**: Generated proofs are optimized for size and verification speed.
 
 ## Tech Stack
 
@@ -97,6 +73,33 @@ This project implements a Zero Knowledge Proof (ZKP) system for rental verificat
   - Frontend: Jest, React Testing Library
   - Backend: Vitest (v1.3.1)
 
+## Project Structure
+
+```
+/
+├── servers/                # Attestation servers
+│   ├── employer/          # Employer server
+│   │   ├── src/          # Source code
+│   │   ├── circuits/     # Income verification circuit
+│   │   └── tests/        # Server tests
+│   └── bank/             # Bank server
+│       ├── src/          # Source code
+│       ├── circuits/     # Credit score circuit
+│       └── tests/        # Server tests
+├── clients/               # Client applications
+│   ├── renter/           # Renter (Prover) client
+│   │   ├── src/         # Source code
+│   │   └── tests/       # Client tests
+│   └── landlord/         # Landlord (Verifier) client
+│       ├── src/         # Source code
+│       └── tests/       # Client tests
+├── circuits/             # Shared circuits
+│   ├── income/          # Income verification circuit
+│   └── credit/          # Credit score circuit
+├── docs/                # Documentation
+└── scripts/            # Utility scripts
+```
+
 ## Quick Start
 
 1. **Clone the repository**
@@ -105,146 +108,88 @@ This project implements a Zero Knowledge Proof (ZKP) system for rental verificat
    cd Rental-Zero-Knowledge-Proofs
    ```
 
-2. **Run the setup script**
+2. **Install dependencies**
    ```bash
-   npm run setup
-   ```
-
-3. **Start the development servers**
-   ```bash
-   npm start
-   ```
-
-## Running the Application
-
-### Client Application
-
-1. **Navigate to the client directory**
-   ```bash
-   cd client
-   ```
-
-2. **Install client dependencies**
-   ```bash
+   # Install root dependencies
    npm install
+
+   # Install server dependencies
+   cd servers/employer && npm install
+   cd ../bank && npm install
+
+   # Install client dependencies
+   cd ../../clients/renter && npm install
+   cd ../landlord && npm install
    ```
 
-3. **Start the development server**
+3. **Start the servers**
    ```bash
+   # Start employer server
+   cd servers/employer
+   npm start
+
+   # Start bank server
+   cd ../bank
    npm start
    ```
-   This will start the React development server on `http://localhost:3000`
 
-4. **Build for production**
+4. **Start the clients**
    ```bash
-   npm run build
+   # Start renter client
+   cd clients/renter
+   npm start
+
+   # Start landlord client
+   cd ../landlord
+   npm start
    ```
-   This creates an optimized production build in the `build` directory.
 
-5. **Run client tests**
-   ```bash
-   npm test
-   ```
+## Development
 
-### Development Features
-- Hot reloading enabled
-- ESLint for code quality
-- Prettier for code formatting
-- Source maps for debugging
-- Development proxy for API requests
+### Server Development
 
-### Environment Variables
-Create a `.env` file in the client directory with:
-```env
-REACT_APP_API_URL=http://localhost:3001
-REACT_APP_ENV=development
-```
+1. **Employer Server**
+   - Handles income verification
+   - Signs income attestations
+   - Publishes income circuit
 
-## Project Structure
+2. **Bank Server**
+   - Handles credit score verification
+   - Signs credit score attestations
+   - Publishes credit score circuit
 
-```
-/
-├── client/                 # Frontend application
-│   ├── src/               # Source code
-│   │   ├── components/    # React components
-│   │   ├── pages/        # Page components
-│   │   ├── services/     # API services
-│   │   └── utils/        # Utility functions
-│   ├── public/           # Static files
-│   └── webpack.config.js # Webpack configuration
-├── server/                # Backend application
-│   ├── src/              # Source code
-│   │   ├── controllers/  # Route controllers
-│   │   ├── models/       # Database models
-│   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic
-│   │   └── utils/        # Utility functions
-│   └── config/           # Configuration files
-├── circuits/             # Zero-knowledge proof circuits
-│   ├── src/             # Circuit source files
-│   ├── build/           # Compiled circuits
-│   └── artifacts/       # Generated proofs and keys
-├── test/                # All tests
-│   ├── client/         # Frontend tests
-│   ├── server/         # Backend tests
-│   └── circuits/       # Circuit tests
-├── docs/               # Documentation
-└── scripts/           # Utility scripts
-```
+### Client Development
 
-## Available Scripts
+1. **Renter Client**
+   - Collects attestations
+   - Generates proofs
+   - Manages private data
 
-- `npm start` - Start development servers
-- `npm test` - Run all tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate test coverage reports
-- `npm run build` - Build for production
-- `npm run lint` - Run linting
-- `npm run format` - Format code with Prettier
-- `npm run setup` - Run project setup script
-- `npm run clean` - Clean all node_modules
-
-## Documentation
-
-Detailed documentation is available in the `docs` directory:
-
-- [Development Setup](docs/setup/development.md)
-- [API Documentation](docs/api/README.md)
-- [Circuit Documentation](docs/circuits/README.md)
-- [Architecture Overview](docs/architecture/overview.md)
-- [Contributing Guide](docs/contributing/workflow.md)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. **Landlord Client**
+   - Verifies proofs
+   - Manages properties
+   - Handles applications
 
 ## Testing
 
-The project uses a comprehensive testing setup:
+Run tests for each component:
 
-- **Frontend**: Jest + React Testing Library
-- **Backend**: Vitest
-- **Circuits**: Custom test suite for zero-knowledge proofs
-
-Run tests with:
 ```bash
-# Run all tests
+# Test employer server
+cd servers/employer
 npm test
 
-# Run specific test suites
-npm run test:client
-npm run test:server
-npm run test:circuits
+# Test bank server
+cd ../bank
+npm test
 
-# Run tests in watch mode
-npm run test:watch
+# Test renter client
+cd ../../clients/renter
+npm test
 
-# Generate coverage reports
-npm run test:coverage
+# Test landlord client
+cd ../landlord
+npm test
 ```
 
 ## Security
@@ -266,3 +211,84 @@ For support, please:
 3. Create a new issue if needed
 
 
+
+
+
+Employer:
+    circuit_income := defineCircuit("income ≥ 3000 EUR")
+    verifying_key_income := generateVerifyingKey(circuit_income)
+    publish(circuit_income, verifying_key_income, issuer_metadata)
+
+Bank:
+    circuit_credit := defineCircuit("credit_score ≥ 700")
+    verifying_key_credit := generateVerifyingKey(circuit_credit)
+    publish(circuit_credit, verifying_key_credit, issuer_metadata)
+
+
+Employer → Renter:
+    renter_income := getIncomeFromHR(renter_id)
+    signed_attestation_income := signWithEmployerKey({
+        "renter_id": renter_id,
+        "income": renter_income,
+        "expires_at": "2025-06-30"
+    })
+    sendToRenter(signed_attestation_income)
+
+Bank → Renter:
+    renter_credit_score := getCreditScore(renter_id)
+    signed_attestation_credit := signWithBankKey({
+        "renter_id": renter_id,
+        "credit_score": renter_credit_score,
+        "expires_at": "2025-06-30"
+    })
+    sendToRenter(signed_attestation_credit)
+
+
+Renter device:
+    verifySignature(signed_attestation_income, employer_public_key)
+    verifySignature(signed_attestation_credit, bank_public_key)
+
+    prover_input_income := {
+        "income": signed_attestation_income["income"],
+        "signature": signed_attestation_income["signature"]
+    }
+
+    prover_input_credit := {
+        "credit_score": signed_attestation_credit["credit_score"],
+        "signature": signed_attestation_credit["signature"]
+    }
+
+    proof_income := runProver(circuit_income, prover_input_income)
+    proof_credit := runProver(circuit_credit, prover_input_credit)
+
+    package := {
+        "proof_income": proof_income,
+        "proof_credit": proof_credit,
+        "attestation_metadata": {
+            "employer": employer_metadata,
+            "bank": bank_metadata
+        }
+    }
+
+    sendToLandlord(package)
+
+
+Landlord:
+    verifying_key_income := fetchFromRegistry(employer_metadata["verifying_key_url"])
+    verifying_key_credit := fetchFromRegistry(bank_metadata["verifying_key_url"])
+
+    isValidIncome := verifyProof(proof_income, verifying_key_income, circuit_income)
+    isValidCredit := verifyProof(proof_credit, verifying_key_credit, circuit_credit)
+
+    if isValidIncome and isValidCredit:
+        approveRental(renter_id)
+    else:
+        rejectRental(renter_id)
+
+
+Landlord:
+    checkNotExpired(signed_attestation_income["expires_at"])
+    checkNotExpired(signed_attestation_credit["expires_at"])
+
+    checkRevocationRegistry(signed_attestation_income)
+    checkRevocationRegistry(signed_attestation_credit)

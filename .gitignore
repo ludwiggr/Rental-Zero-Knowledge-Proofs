@@ -39,6 +39,9 @@ circuits/artifacts/
 *.wasm
 *.zkey
 *.ptau
+*.vkey.json
+*.r1cs
+*.sym
 
 # Temporary files
 *.tmp

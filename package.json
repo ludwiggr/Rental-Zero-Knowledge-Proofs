@@ -3,22 +3,24 @@
   "version": "1.0.0",
   "description": "Rental Zero Knowledge Proof System",
   "scripts": {
-    "test": "npm run test:server && npm run test:client && npm run test:circuits",
-    "test:server": "cd server && npm test",
-    "test:client": "cd client && npm test",
+    "test": "npm run test:employer && npm run test:bank && npm run test:renter && npm run test:landlord && npm run test:circuits",
+    "test:employer": "cd servers/employer && npm test",
+    "test:bank": "cd servers/bank && npm test",
+    "test:renter": "cd clients/renter && npm test",
+    "test:landlord": "cd clients/landlord && npm test",
     "test:circuits": "cd circuits && npm test",
-    "test:watch": "concurrently \"cd server && npm run test:watch\" \"cd client && npm run test:watch\" \"cd circuits && npm run test:watch\"",
-    "test:coverage": "concurrently \"cd server && npm run test:coverage\" \"cd client && npm run test:coverage\" \"cd circuits && npm run test:coverage\"",
-    "start": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
-    "lint": "npm run lint:client && npm run lint:server",
-    "lint:client": "cd client && npm run lint",
-    "lint:server": "cd server && npm run lint",
+    "test:watch": "concurrently \"cd servers/employer && npm run test:watch\" \"cd servers/bank && npm run test:watch\" \"cd clients/renter && npm run test:watch\" \"cd clients/landlord && npm run test:watch\" \"cd circuits && npm run test:watch\"",
+    "test:coverage": "concurrently \"cd servers/employer && npm run test:coverage\" \"cd servers/bank && npm run test:coverage\" \"cd clients/renter && npm run test:coverage\" \"cd clients/landlord && npm run test:coverage\" \"cd circuits && npm run test:coverage\"",
+    "start": "concurrently \"cd servers/employer && npm run dev\" \"cd servers/bank && npm run dev\" \"cd clients/renter && npm run dev\" \"cd clients/landlord && npm run dev\"",
+    "build": "npm run build:servers && npm run build:clients",
+    "build:servers": "concurrently \"cd servers/employer && npm run build\" \"cd servers/bank && npm run build\"",
+    "build:clients": "concurrently \"cd clients/renter && npm run build\" \"cd clients/landlord && npm run build\"",
+    "lint": "npm run lint:servers && npm run lint:clients",
+    "lint:servers": "concurrently \"cd servers/employer && npm run lint\" \"cd servers/bank && npm run lint\"",
+    "lint:clients": "concurrently \"cd clients/renter && npm run lint\" \"cd clients/landlord && npm run lint\"",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "setup": "bash scripts/setup/init.sh",
-    "clean": "rimraf node_modules client/node_modules server/node_modules circuits/node_modules",
+    "clean": "rimraf node_modules servers/employer/node_modules servers/bank/node_modules clients/renter/node_modules clients/landlord/node_modules circuits/node_modules",
     "postinstall": "husky install"
   },
   "devDependencies": {
@@ -36,5 +38,15 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "bcrypt": "^5.1.1",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "rate-limiter-flexible": "^3.0.0",
+    "express-validator": "^7.0.1"
   }
 }
